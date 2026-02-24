@@ -74,21 +74,26 @@ describe("gridEngine core logic", () => {
         { r: 0, c: 0 },
         { r: 1, c: 1 },
       ],
+      // Must be consistent with givens: grid[1][1] is fixed=2, so solution[1][1] must be 2.
       solution: [
         [1, 2],
         [2, 1],
-      ],
+      ].map((row) => row.slice()),
     };
 
+    // Adjust solution to match fixed givens for this minimal test level.
+    level.solution[1][1] = 2;
+    level.solution[1][0] = 1;
+
     const s0 = createInitialState(level);
+
     const s1 = applyValue(s0, 0, 1, 2);
     expect(s1.status).toBe("playing");
 
-    const s2 = applyValue(s1, 1, 0, 2);
-    // This is consistent but not solved (solution wants 2 at (1,0) actually yes; but then (1,1) fixed=2 so mismatch)
-    // Actually level grid fixed (1,1)=2 but solution(1,1)=1 -> unsolved by definition.
-    expect(s2.status).toBe("playing");
+    // Fill the remaining cell with a non-conflicting value so the grid becomes complete and consistent.
+    const s2 = applyValue(s1, 1, 0, 1);
     expect(s2.errors.size).toBe(0);
+    expect(s2.status).toBe("solved");
   });
 
   test("findHint returns first empty cell with known solution value", () => {
